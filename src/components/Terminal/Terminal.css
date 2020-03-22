@@ -1,0 +1,35 @@
+.Terminal {
+    white-space: pre;
+    word-wrap: break-word;
+    font-family: monospace;
+    font-size: 12pt;
+    background-color: black;
+    color: white;
+    min-width: 100vw;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    padding: 10px;
+}
+
+.Terminal-Prompt {
+    width: 2%;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.Terminal-Input {
+    white-space: pre;
+    word-wrap: break-word;
+    font-family: monospace;
+    font-size: 12pt;
+    background-color: black;
+    color: white;
+    max-height: 12pt;
+    width: 97%;
+    flex-grow: 1;
+    flex-shrink: 1;
+    text-align: left;
+    border: none;
+}
