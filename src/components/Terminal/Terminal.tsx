@@ -59,6 +59,9 @@ class Terminal extends React.Component<ITerminalSettings, ITerminalState> {
                     socket.do(option);
                     socket.sendGMCP("Core.Hello", { client: "WST React", version: React.version });
                     break;
+                case WST.TelnetOption.SUPPRESS_GO_AHEAD:
+                    socket.do(option);
+                    break;
             }
         };
         socket.ongmcp = (namespace, data) => {
