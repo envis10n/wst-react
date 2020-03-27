@@ -2,34 +2,48 @@
     white-space: pre;
     word-wrap: break-word;
     font-family: monospace;
-    font-size: 12pt;
+    font-size: 14pt;
     background-color: black;
     color: white;
-    min-width: 100vw;
-    min-height: 100vh;
     display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
     flex-direction: column;
     text-align: left;
     padding: 10px;
 }
 
-.Terminal-Prompt {
-    width: 2%;
+.Terminal-Output {
+    width: 99%;
+    height: 98%;
     flex-grow: 1;
     flex-shrink: 1;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    padding: 5px;
+    outline: 3px solid gray;
+    border: 1px solid black;
 }
 
 .Terminal-Input {
     white-space: pre;
     word-wrap: break-word;
     font-family: monospace;
-    font-size: 12pt;
-    background-color: black;
-    color: white;
-    max-height: 12pt;
-    width: 97%;
+    font-size: 14pt;
+    background-color: white;
+    color: black;
+    font-weight: bold;
+    max-height: 1.5em;
+    width: 99%;
+    height: 1.5em;
     flex-grow: 1;
     flex-shrink: 1;
     text-align: left;
-    border: none;
+    border: 1px solid black;
+    margin-bottom: 5px;
+    outline: 3px solid gray;
+    padding: 5px;
 }

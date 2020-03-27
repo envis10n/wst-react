@@ -1,7 +1,7 @@
 import React from "react";
 import WST from "ws-telnet-client";
 import "./Terminal.css";
-import { throws } from "assert";
+//import * as GMCP from "./GMCP";
 
 interface ITerminalSettings {
     uri: string;
@@ -14,10 +14,13 @@ interface ITerminalState {
     buffer: string;
     prompt: string;
     inputEnabled: boolean;
+    multiline: string[];
 }
 
 class Terminal extends React.Component<ITerminalSettings, ITerminalState> {
     inputRef: React.RefObject<HTMLInputElement> = React.createRef();
+    termRef: React.RefObject<HTMLDivElement> = React.createRef();
+    endRef: React.RefObject<HTMLSpanElement> = React.createRef();
     constructor(props: Readonly<ITerminalSettings>) {
         super(props);
         this.state = {
@@ -26,6 +29,7 @@ class Terminal extends React.Component<ITerminalSettings, ITerminalState> {
             buffer: "",
             prompt: this.props.prompt || "> ",
             inputEnabled: false,
+            multiline: []
         };
     }
     enableInput() {
@@ -53,25 +57,25 @@ class Terminal extends React.Component<ITerminalSettings, ITerminalState> {
             switch (option) {
                 case WST.TelnetOption.GMCP:
                     socket.do(option);
-                    socket.sendGMCP("Core.Hello", { client: "WST React", version: "0.1.0" });
-                    this.setPrompt("GMCP> ");
+                    socket.sendGMCP("Core.Hello", { client: "WST React", version: React.version });
                     break;
             }
         };
         socket.ongmcp = (namespace, data) => {
             switch (namespace) {
-                case "Server.Hello":
-                    this.printLine(
-                        `\nServer.Hello\nServer Node Version: ${data.node_version}\nClient UUID: ${data.client_uuid}\n`,
-                    );
-                    break;
+                
             }
         };
+    }
+    setScrollBottom() {
+        //
+        this.endRef.current?.scrollIntoView({ behavior: "smooth" });
     }
     print(...data: string[]) {
         const fin = data.join(" ");
         const buffer = this.state.buffer + fin;
         this.setState({ ...this.state, buffer });
+        this.setScrollBottom();
     }
     printLine(...data: string[]) {
         data.push("\n");
@@ -84,37 +88,64 @@ class Terminal extends React.Component<ITerminalSettings, ITerminalState> {
     onClick(ev: React.MouseEvent) {
         if (this.state.inputEnabled) this.inputRef.current?.focus();
     }
-    onKeyPress(ev: React.KeyboardEvent) {
+    onKeyPress(ev: React.KeyboardEvent<HTMLInputElement>) {
         if (!this.state.inputEnabled) return;
-        if (ev.key === "Enter") {
-            // Input submit
-            const input = this.inputRef.current;
-            if (input !== null) {
-                if (input.value.trim().length > 0) {
-                    const t = input.value;
-                    input.value = "";
-                    this.printLine(`${this.state.prompt}${t}`);
-                    const state = this.state;
-                    if (state.socket !== null) state.socket.send(t);
+        const input = this.inputRef.current;
+        switch (ev.key) {
+            case "Enter":
+                if (ev.shiftKey) {
+                    // Multiline
+                    if (input !== null) {
+                        const t = input.value;
+                        this.state.multiline.push(t);
+                        input.value = "";
+                        input.placeholder = "";
+                        this.printLine(t + " ...");
+                        ev.preventDefault();
+                    }
+                } else {
+                    // Input submit
+                    if (input !== null) {
+                        let t = input.value;
+                        let multi: boolean = false;
+                        if (this.state.multiline.length > 0) {
+                            multi = true;
+                            this.state.multiline.push(input.value);
+                            t = this.state.multiline.join("\n");
+                        }
+                        if (t === "" && input.placeholder.length > 0) t = input.placeholder;
+                        input.value = "";
+                        input.placeholder = multi ? "" : t;
+                        this.setState({ ...this.state, multiline: [] as string[] }, () => {
+                            this.printLine((multi ? "\n[Multiline Input]\n" : "") + t);
+                            const state = this.state;
+                            if (state.socket !== null) state.socket.send(t);
+                        });
+                        ev.preventDefault();
+                    }
                 }
-                ev.preventDefault();
-            }
+                break;
+            case "Tab":
+                if (input !== null) {
+                    input.value += "    ";
+                    ev.preventDefault();
+                }
+                break;
         }
     }
     render() {
         return (
-            <div className="Terminal" onClick={this.onClick.bind(this)}>
-                {this.state.buffer}
-                <div>
-                    <span className="Terminal-Prompt">{this.state.prompt}</span>
-                    <input
-                        ref={this.inputRef}
-                        onKeyPress={this.onKeyPress.bind(this)}
-                        className="Terminal-Input"
-                        type="text"
-                        disabled={!this.state.inputEnabled}
-                    />
+            <div ref={this.termRef} className="Terminal" onClick={this.onClick.bind(this)}>
+                <div className="Terminal-Output">
+                    {this.state.buffer}<span ref={this.endRef} />
                 </div>
+                <input
+                    ref={this.inputRef}
+                    onKeyDown={this.onKeyPress.bind(this)}
+                    className="Terminal-Input"
+                    type="text"
+                    disabled={!this.state.inputEnabled}
+                />
             </div>
         );
     }
