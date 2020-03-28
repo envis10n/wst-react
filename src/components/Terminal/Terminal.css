@@ -1,8 +1,8 @@
 .Terminal {
     white-space: pre;
     word-wrap: break-word;
-    font-family: monospace;
-    font-size: 14pt;
+    font-family: "Noto Mono", monospace;
+    font-size: 12pt;
     background-color: black;
     color: white;
     display: flex;
@@ -26,13 +26,15 @@
     padding: 5px;
     outline: 3px solid gray;
     border: 1px solid black;
+    word-wrap: break-word;
+    word-break: break-all;
 }
 
 .Terminal-Input {
     white-space: pre;
     word-wrap: break-word;
-    font-family: monospace;
-    font-size: 14pt;
+    font-family: "Noto Mono", monospace;
+    font-size: 12pt;
     background-color: white;
     color: black;
     font-weight: bold;

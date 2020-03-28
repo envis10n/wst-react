@@ -11,11 +11,10 @@ interface ITerminalSettings {
 interface ITerminalState {
     uri: string;
     socket: WST | null;
-    buffer: string;
     prompt: string;
     inputEnabled: boolean;
     multiline: string[];
-    output: React.ReactElement[]
+    output: React.ReactElement[];
 }
 
 class Terminal extends React.Component<ITerminalSettings, ITerminalState> {
@@ -27,11 +26,10 @@ class Terminal extends React.Component<ITerminalSettings, ITerminalState> {
         this.state = {
             socket: null,
             uri: this.props.uri,
-            buffer: "",
             prompt: this.props.prompt || "> ",
             inputEnabled: false,
             multiline: [],
-            output: []
+            output: [],
         };
     }
     enableInput() {
@@ -71,22 +69,23 @@ class Terminal extends React.Component<ITerminalSettings, ITerminalState> {
         };
         socket.ongmcp = (namespace, data) => {
             switch (namespace) {
-                
             }
         };
     }
     setScrollBottom() {
-        //
         this.endRef.current?.scrollIntoView({ behavior: "smooth" });
     }
     print(...data: string[]) {
         const fin = data.join(" ");
-        this.setState({
-            ...this.state,
-            output: [...this.state.output, ...ANSI.parseANSI(fin, this.state.output.length)],
-        }, () => {
-            this.setScrollBottom();    
-        });
+        this.setState(
+            {
+                ...this.state,
+                output: [...this.state.output, ...ANSI.parseANSI(fin)],
+            },
+            () => {
+                this.setScrollBottom();
+            },
+        );
     }
     printLine(...data: string[]) {
         data.push("\n");
@@ -149,7 +148,7 @@ class Terminal extends React.Component<ITerminalSettings, ITerminalState> {
             <div ref={this.termRef} className="Terminal" onClick={this.onClick.bind(this)}>
                 <div className="Terminal-Output">
                     {this.state.output.map((el, i) => el)}
-                    <span ref={this.endRef}/>
+                    <span ref={this.endRef} />
                 </div>
                 <input
                     ref={this.inputRef}
