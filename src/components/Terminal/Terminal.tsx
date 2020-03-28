@@ -1,7 +1,7 @@
 import React from "react";
 import WST from "ws-telnet-client";
 import "./Terminal.css";
-//import * as GMCP from "./GMCP";
+import * as ANSI from "./ANSI";
 
 interface ITerminalSettings {
     uri: string;
@@ -15,6 +15,7 @@ interface ITerminalState {
     prompt: string;
     inputEnabled: boolean;
     multiline: string[];
+    output: React.ReactElement[]
 }
 
 class Terminal extends React.Component<ITerminalSettings, ITerminalState> {
@@ -29,7 +30,8 @@ class Terminal extends React.Component<ITerminalSettings, ITerminalState> {
             buffer: "",
             prompt: this.props.prompt || "> ",
             inputEnabled: false,
-            multiline: []
+            multiline: [],
+            output: []
         };
     }
     enableInput() {
@@ -62,6 +64,9 @@ class Terminal extends React.Component<ITerminalSettings, ITerminalState> {
                 case WST.TelnetOption.SUPPRESS_GO_AHEAD:
                     socket.do(option);
                     break;
+                default:
+                    socket.dont(option);
+                    break;
             }
         };
         socket.ongmcp = (namespace, data) => {
@@ -76,9 +81,12 @@ class Terminal extends React.Component<ITerminalSettings, ITerminalState> {
     }
     print(...data: string[]) {
         const fin = data.join(" ");
-        const buffer = this.state.buffer + fin;
-        this.setState({ ...this.state, buffer });
-        this.setScrollBottom();
+        this.setState({
+            ...this.state,
+            output: [...this.state.output, ...ANSI.parseANSI(fin, this.state.output.length)],
+        }, () => {
+            this.setScrollBottom();    
+        });
     }
     printLine(...data: string[]) {
         data.push("\n");
@@ -140,7 +148,8 @@ class Terminal extends React.Component<ITerminalSettings, ITerminalState> {
         return (
             <div ref={this.termRef} className="Terminal" onClick={this.onClick.bind(this)}>
                 <div className="Terminal-Output">
-                    {this.state.buffer}<span ref={this.endRef} />
+                    {this.state.output.map((el, i) => el)}
+                    <span ref={this.endRef}/>
                 </div>
                 <input
                     ref={this.inputRef}
