@@ -33,7 +33,7 @@ export function parseANSI(data: string, len: number): React.ReactElement[] {
                     const color = ColorMap[code];
                     te.push(React.createElement("span", { key: l, style: color }, temp));
                 } else {
-                    te.push(React.createElement("span", { key: l, style: ColorMap["[0m"] }, temp));
+                    te.push(React.createElement("span", { key: l, style: ColorMap["[0m"] }, b));
                 }
             } else {
                 te.push(React.createElement("span", { key: l, style: ColorMap["[0m"] }, b));
